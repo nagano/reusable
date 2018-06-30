@@ -1,8 +1,20 @@
 (function(global){
     const document = global.document;
 
-    function convertHTMLObjectToArray(componentName){
-        let HTMLObject = document.getElementsByTagName(componentName)
+    function convertHTMLObjectToArray(type, componentName){
+        let HTMLObject
+
+        switch(type){
+            case 'getElementsByTagName':
+                HTMLObject = document.getElementsByTagName(componentName);
+                break;
+            case 'querySelectorAll':
+                HTMLObject = document.querySelectorAll(componentName);
+                break;
+            default:
+                HTMLObject = [];
+        }
+
         return [].slice.call(HTMLObject);
     }
 
@@ -12,6 +24,12 @@
             let props = config.props;
             let data = config.data;
 
+            const expressions = template.match(/{{\s+\w+\s+}}/gi);
+            expressions.forEach(function(expression){
+                let variable = expression.match(/(\w+)/)[0];
+                template = template.replace(new RegExp(expression), replaceVarInTemplate(variable));
+            });
+
             function replaceVarInTemplate(variable){
                 if(data && variable in data){
                     return data[variable];
@@ -19,25 +37,16 @@
 
                 if(props){
                     let attributeValue = element.attributes[variable].value;
-                    switch(props[variable]){
-                        case '@':
-                            return attributeValue;
-                            break;
-                        case '=':
-                            return global[attributeValue];
-                            break;
-                        default:
-                            console.log('none');
+
+                    if(props[variable] === '@'){
+                        return attributeValue;
+                    } else if(props[variable] === '='){
+                        return global[attributeValue];
+                    } else {
+                        return ' ';
                     }
                 }
             }
-
-            const expressions = config.template.match(/{{\s+\w+\s+}}/gi);
-
-            expressions.forEach(function(expression){
-                let variable = expression.match(/(\w+)/)[0];
-                template = template.replace(new RegExp(expression), replaceVarInTemplate(variable));
-            });
 
             return template;
         },
@@ -50,7 +59,12 @@
          * }
          */
         component: function(componentName, config){
-            document.createElement(componentName);
+            function convertHTMLObjectToArray(componentName){
+                let HTMLObject = document.getElementsByTagName(componentName)
+                return [].slice.call(HTMLObject);
+            }
+
+            document.createElement(componentName); // required by older browsers
             const componentInstances = convertHTMLObjectToArray(componentName);
 
             componentInstances.forEach(element => {
