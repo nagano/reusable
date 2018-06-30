@@ -59,19 +59,33 @@
          * }
          */
         component: function(componentName, config){
-            function convertHTMLObjectToArray(componentName){
-                let HTMLObject = document.getElementsByTagName(componentName)
-                return [].slice.call(HTMLObject);
-            }
-
             document.createElement(componentName); // required by older browsers
-            const componentInstances = convertHTMLObjectToArray(componentName);
+            const componentInstances = convertHTMLObjectToArray('getElementsByTagName', componentName);
 
             componentInstances.forEach(element => {
                 element.innerHTML = this.parseTemplate(element, config);
+                declareBuiltInDirectives(config.data);
             });
         }
     }
+
+    function declareBuiltInDirectives(scope){
+        scope = scope || global;
+
+        const reuseIf = convertHTMLObjectToArray('querySelectorAll', '[reuse-if]')
+        reuseIf.forEach(function(element){
+            let attributeValue = element.attributes['reuse-if'].value;
+
+            setTimeout(function(){
+                let condition = scope[attributeValue];
+                if(!condition){
+                    element.style.display = 'none';
+                }
+            }, 0)
+        });
+    }
+
+    declareBuiltInDirectives();
 
     global.Reusable = Reusable;
 })(window);
