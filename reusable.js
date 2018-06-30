@@ -22,10 +22,11 @@
         /**
          * config: {
          *  data <object>
+         *  props <object>
          *  template <string>
          * }
          */
-        registerComponent: function(componentName, config){
+        component: function(componentName, config){
             document.createElement(componentName);
             const componentInstances = convertHTMLObjectToArray(document.getElementsByTagName(componentName));
 
