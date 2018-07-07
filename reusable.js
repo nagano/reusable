@@ -72,7 +72,7 @@
 
             componentInstances.forEach(element => {
                 element.innerHTML = this.parseTemplate(element, config);
-                declareBuiltInDirectives(config.data);
+                // declareBuiltInDirectives(config.data);
             });
         }
     }
@@ -83,17 +83,16 @@
         const reuseIf = convertHTMLObjectToArray('querySelectorAll', '[reuse-if]')
         reuseIf.forEach(function(element){
             let attributeValue = element.attributes['reuse-if'].value;
+            let evaluate = jsParser.compile(attributeValue);
 
             setTimeout(function(){
-                let condition = scope[attributeValue];
-                if(!condition){
+                let value = evaluate(global);
+                if(!value){
                     element.style.display = 'none';
                 }
             }, 0)
         });
     }
-
-    declareBuiltInDirectives();
 
     /* angular-expression - angularjs javascript expression parser
     ================================================================================================*/
@@ -1160,5 +1159,6 @@
         expressionsObj.filters = filters;
     })(jsParser);
 
+    declareBuiltInDirectives();
     global.Reusable = Reusable;
 })(window);
