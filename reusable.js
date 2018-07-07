@@ -42,7 +42,14 @@
                     if(props[variable] === '@'){
                         return attributeValue;
                     } else if(props[variable] === '='){
-                        return global[attributeValue];
+                        let evaluate = jsParser.compile(attributeValue);
+                        let value = evaluate(this)
+
+                        if(!value){
+                            return '';
+                        } else {
+                            return value;
+                        }
                     } else {
                         return ' ';
                     }
