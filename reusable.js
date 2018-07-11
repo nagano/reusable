@@ -2,6 +2,23 @@
     const document = global.document;
     const jsParser = {};
 
+    function Scope(){
+        this.registeredComponents = [];
+    }
+
+    Scope.prototype = global;
+    Scope.prototype.new = function(){
+        let child;
+
+        function ChildScope(){ }
+        ChildScope.prototype = this;
+        child = new ChildScope();
+
+        return child;
+    }
+
+    const rootScope = new Scope();
+
     function convertHTMLObjectToArray(type, componentName){
         let HTMLObject
 
@@ -43,7 +60,7 @@
                         return attributeValue;
                     } else if(props[variable] === '='){
                         let evaluate = jsParser.compile(attributeValue);
-                        let value = evaluate(this)
+                        let value = evaluate(element.scope);
 
                         if(!value){
                             return '';
@@ -71,6 +88,14 @@
             const componentInstances = convertHTMLObjectToArray('getElementsByTagName', componentName);
 
             componentInstances.forEach(element => {
+                element.scope = rootScope.new();
+
+                if(config.data){
+                    for(let dataAttr in config.data){
+                        element.scope[dataAttr] = config.data[dataAttr];
+                    }
+                }
+
                 element.innerHTML = this.parseTemplate(element, config);
                 // declareBuiltInDirectives(config.data);
             });
